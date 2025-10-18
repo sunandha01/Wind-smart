@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WindSmart - AI-Powered Wind Turbine Site Selection</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="images/wind-turbine-icon.svg" alt="WindSmart Logo">
+            <h1>WindSmart</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active">Dashboard</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="filter-section">
+                <h2>Filter Options</h2>
+                <div class="filter-group">
+                    <label for="region-filter">Region</label>
+                    <select id="region-filter">
+                        <option value="">All Regions</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="wind-zone-filter">Wind Zone</label>
+                    <select id="wind-zone-filter">
+                        <option value="">All Wind Zones</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="cost-factor-filter">Cost Factor</label>
+                    <select id="cost-factor-filter">
+                        <option value="">All Cost Factors</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="visualization-type">Visualization</label>
+                    <select id="visualization-type">
+                        <option value="markers">Markers</option>
+                        <option value="heatmap">Heat Map</option>
+                    </select>
+                </div>
+                <div class="filter-buttons">
+                    <button id="apply-filters" class="btn primary">Apply Filters</button>
+                    <button id="reset-filters" class="btn secondary">Reset</button>
+                </div>
+            </div>
+            
+            <div class="analysis-summary">
+                <h2>Analysis Summary</h2>
+                <div class="summary-item">
+                    <span class="label">Total Sites:</span>
+                    <span id="total-sites" class="value">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Average Score:</span>
+                    <span id="avg-score" class="value">0.0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Top Region:</span>
+                    <span id="top-region" class="value">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Sort By:</span>
+                    <select id="sort-by">
+                        <option value="score">Overall Score</option>
+                        <option value="wind_speed">Wind Speed</option>
+                        <option value="energy_yield">Energy Yield</option>
+                        <option value="cost_efficiency">Cost Efficiency</option>
+                    </select>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="content">
+            <div id="map-container">
+                <div id="map"></div>
+            </div>
+            
+            <div class="site-list">
+                <h2>Site List</h2>
+                <div id="site-cards"></div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="site-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2 id="modal-site-name">Site Name</h2>
+                <div class="site-score">Score: <span id="modal-site-score">0.0</span></div>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>Location</h3>
+                    <div class="detail-item">
+                        <span class="label">Coordinates:</span>
+                        <span id="modal-coordinates" class="value">0.0, 0.0</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Region:</span>
+                        <span id="modal-region" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Wind Zone:</span>
+                        <span id="modal-wind-zone" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Terrain:</span>
+                        <span id="modal-terrain" class="value">-</span>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Wind Characteristics</h3>
+                    <div class="detail-item">
+                        <span class="label">Wind Speed:</span>
+                        <span id="modal-wind-speed" class="value">0 m/s</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Wind Consistency:</span>
+                        <span id="modal-wind-consistency" class="value">0/10</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Energy Yield:</span>
+                        <span id="modal-energy-yield" class="value">0 MWh/year</span>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Infrastructure</h3>
+                    <div class="detail-item">
+                        <span class="label">Grid Connectivity:</span>
+                        <span id="modal-grid-connectivity" class="value">0/10</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Land Use:</span>
+                        <span id="modal-land-use" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Cost Efficiency:</span>
+                        <span id="modal-cost-efficiency" class="value">0/10</span>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>Environmental Impact</h3>
+                    <div class="detail-item">
+                        <span class="label">Overall Score:</span>
+                        <span id="modal-environmental-score" class="value">0/10</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Wildlife Impact:</span>
+                        <span id="modal-wildlife-impact" class="value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">Noise Impact:</span>
+                        <span id="modal-noise-impact" class="value">-</span>
+                    </div>
+                </div>
+                
+                <div class="modal-section charts">
+                    <h3>Site Comparison</h3>
+                    <div class="chart-container">
+                        <canvas id="site-comparison-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="energy-projection-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <h3>AI Recommendations</h3>
+                    <ul id="modal-recommendations"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading-indicator">
+        <div class="spinner"></div>
+        <p>Loading data...</p>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
